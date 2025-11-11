@@ -1,5 +1,5 @@
 import { odooClient } from '../odoo/client'
-import type { ServiceRequest } from '@/types/models/ServiceRequest'
+import type { ServiceRequest, ServiceRequestFormData } from '@/types/models/ServiceRequest'
 
 export const serviceRequestService = {
   async getAll(filters?: any): Promise<ServiceRequest[]> {
@@ -32,8 +32,13 @@ export const serviceRequestService = {
     return result[0]
   },
 
-  async create(data: Partial<ServiceRequest>): Promise<number> {
-    return odooClient.create('routy.service_request', data)
+  async create(data: ServiceRequestFormData): Promise<number> {
+    const payload: Record<string, any> = { ...data }
+    if (payload.customer_id == null) {
+      delete payload.customer_id
+    }
+
+    return odooClient.create('routy.service_request', payload)
   },
 
   async update(id: number, data: Partial<ServiceRequest>): Promise<boolean> {

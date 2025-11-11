@@ -1,7 +1,7 @@
 export interface ServiceRequest {
   id: number
   name: string
-  customer_id: [number, string]
+  customer_id: [number, string] | null | false
   service_type: 'local' | 'express' | 'scheduled'
 
   pickup_address: string
@@ -35,7 +35,7 @@ export interface ServiceRequest {
 }
 
 export interface ServiceRequestFormData {
-  customer_id: number
+  customer_id: number | null
   service_type: string
   pickup_address: string
   pickup_phone: string

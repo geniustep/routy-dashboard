@@ -46,9 +46,10 @@ class OdooClient {
       throw new Error(response.data.error.message || 'Authentication failed')
     }
 
-    this.session = response.data.result
-    localStorage.setItem('odoo_session', JSON.stringify(this.session))
-    return this.session
+    const session = response.data.result as OdooSession
+    this.session = session
+    localStorage.setItem('odoo_session', JSON.stringify(session))
+    return session
   }
 
   async call(model: string, method: string, args: any[] = [], kwargs: any = {}): Promise<any> {

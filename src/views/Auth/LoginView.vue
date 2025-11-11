@@ -1,18 +1,20 @@
 <template>
   <a-card class="shadow-lg">
-    <h2 class="text-2xl font-bold text-center mb-6">Login to Dashboard</h2>
+    <h2 class="text-2xl font-bold text-center mb-6">
+      {{ t('common.loginTitle') }}
+    </h2>
 
     <a-form
       :model="formState"
-      :rules="rules"
+      :rules="validationRules"
       layout="vertical"
       @finish="handleSubmit"
     >
-      <a-form-item label="Username" name="username">
+      <a-form-item :label="t('common.username')" name="username">
         <a-input
           v-model:value="formState.username"
           size="large"
-          placeholder="Enter your username"
+          :placeholder="t('common.usernamePlaceholder')"
         >
           <template #prefix>
             <user-outlined />
@@ -20,11 +22,11 @@
         </a-input>
       </a-form-item>
 
-      <a-form-item label="Password" name="password">
+      <a-form-item :label="t('common.password')" name="password">
         <a-input-password
           v-model:value="formState.password"
           size="large"
-          placeholder="Enter your password"
+          :placeholder="t('common.passwordPlaceholder')"
         >
           <template #prefix>
             <lock-outlined />
@@ -34,7 +36,7 @@
 
       <a-form-item>
         <a-checkbox v-model:checked="formState.remember">
-          Remember me
+          {{ t('common.rememberMe') }}
         </a-checkbox>
       </a-form-item>
 
@@ -56,25 +58,27 @@
           block
           :loading="authStore.loading"
         >
-          Login
+          {{ t('common.login') }}
         </a-button>
       </a-form-item>
     </a-form>
 
     <div class="text-center text-gray-600 mt-4">
-      <p>Powered by Routy v1.0</p>
+      <p>{{ t('common.poweredBy') }}</p>
     </div>
   </a-card>
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 const formState = reactive({
   username: '',
@@ -82,14 +86,14 @@ const formState = reactive({
   remember: false,
 })
 
-const rules = {
+const validationRules = computed(() => ({
   username: [
-    { required: true, message: 'Please enter your username', trigger: 'blur' },
+    { required: true, message: t('common.validation.usernameRequired'), trigger: 'blur' },
   ],
   password: [
-    { required: true, message: 'Please enter your password', trigger: 'blur' },
+    { required: true, message: t('common.validation.passwordRequired'), trigger: 'blur' },
   ],
-}
+}))
 
 async function handleSubmit() {
   const success = await authStore.login(formState.username, formState.password)

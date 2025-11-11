@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { serviceRequestService } from '@/api/services/serviceRequestService'
 import { message } from 'ant-design-vue'
-import { ref } from 'vue'
+import type { ServiceRequestFormData } from '@/types/models/ServiceRequest'
+import i18n from '@/locales'
 
 export function useServiceRequests(filters?: any) {
   const queryClient = useQueryClient()
@@ -12,13 +13,13 @@ export function useServiceRequests(filters?: any) {
   })
 
   const createMutation = useMutation({
-    mutationFn: serviceRequestService.create,
+    mutationFn: (data: ServiceRequestFormData) => serviceRequestService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['serviceRequests'] })
-      message.success('Service request created successfully')
+      message.success(i18n.global.t('serviceRequests.messages.createSuccess'))
     },
     onError: (error: any) => {
-      message.error(error.message || 'Failed to create service request')
+      message.error(error.message || i18n.global.t('serviceRequests.messages.createError'))
     },
   })
 
@@ -27,10 +28,10 @@ export function useServiceRequests(filters?: any) {
       serviceRequestService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['serviceRequests'] })
-      message.success('Service request updated successfully')
+      message.success(i18n.global.t('serviceRequests.messages.updateSuccess'))
     },
     onError: (error: any) => {
-      message.error(error.message || 'Failed to update service request')
+      message.error(error.message || i18n.global.t('serviceRequests.messages.updateError'))
     },
   })
 
@@ -38,10 +39,10 @@ export function useServiceRequests(filters?: any) {
     mutationFn: serviceRequestService.confirm,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['serviceRequests'] })
-      message.success('Service request confirmed')
+      message.success(i18n.global.t('serviceRequests.messages.confirmSuccess'))
     },
     onError: (error: any) => {
-      message.error(error.message || 'Failed to confirm service request')
+      message.error(error.message || i18n.global.t('serviceRequests.messages.confirmError'))
     },
   })
 
@@ -49,10 +50,10 @@ export function useServiceRequests(filters?: any) {
     mutationFn: serviceRequestService.cancel,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['serviceRequests'] })
-      message.success('Service request cancelled')
+      message.success(i18n.global.t('serviceRequests.messages.cancelSuccess'))
     },
     onError: (error: any) => {
-      message.error(error.message || 'Failed to cancel service request')
+      message.error(error.message || i18n.global.t('serviceRequests.messages.cancelError'))
     },
   })
 

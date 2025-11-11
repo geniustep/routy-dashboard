@@ -2,8 +2,8 @@
   <div class="space-y-6">
     <!-- Page Header -->
     <div>
-      <h1 class="text-2xl font-bold">Dashboard</h1>
-      <p class="text-gray-600">Welcome back! Here's what's happening today.</p>
+      <h1 class="text-2xl font-bold">{{ t('dashboard.title') }}</h1>
+      <p class="text-gray-600">{{ t('dashboard.welcome') }}</p>
     </div>
 
     <!-- KPI Cards -->
@@ -11,7 +11,7 @@
       <a-col :xs="24" :sm="12" :lg="6">
         <a-card class="hover:shadow-lg transition-shadow">
           <a-statistic
-            title="Total Requests"
+            :title="t('dashboard.kpi.totalRequests')"
             :value="stats.totalRequests"
             :prefix="h(FileTextOutlined)"
             :value-style="{ color: '#1890ff' }"
@@ -21,7 +21,7 @@
       <a-col :xs="24" :sm="12" :lg="6">
         <a-card class="hover:shadow-lg transition-shadow">
           <a-statistic
-            title="Active Deliveries"
+            :title="t('dashboard.kpi.activeDeliveries')"
             :value="stats.activeDeliveries"
             :value-style="{ color: '#52c41a' }"
             :prefix="h(CarOutlined)"
@@ -31,7 +31,7 @@
       <a-col :xs="24" :sm="12" :lg="6">
         <a-card class="hover:shadow-lg transition-shadow">
           <a-statistic
-            title="Success Rate"
+            :title="t('dashboard.kpi.successRate')"
             :value="stats.successRate"
             suffix="%"
             :precision="1"
@@ -42,9 +42,9 @@
       <a-col :xs="24" :sm="12" :lg="6">
         <a-card class="hover:shadow-lg transition-shadow">
           <a-statistic
-            title="Revenue Today"
+            :title="t('dashboard.kpi.revenueToday')"
             :value="stats.revenue"
-            prefix="MAD"
+            :prefix="t('common.currencyMAD')"
             :precision="2"
             :value-style="{ color: '#faad14' }"
           />
@@ -55,12 +55,12 @@
     <!-- Charts Row -->
     <a-row :gutter="16">
       <a-col :xs="24" :lg="16">
-        <a-card title="Deliveries Overview" :loading="loading">
+        <a-card :title="t('dashboard.charts.deliveriesOverview')" :loading="loading">
           <v-chart class="chart" :option="deliveryChartOption" autoresize />
         </a-card>
       </a-col>
       <a-col :xs="24" :lg="8">
-        <a-card title="Status Distribution" :loading="loading">
+        <a-card :title="t('dashboard.charts.statusDistribution')" :loading="loading">
           <v-chart class="chart" :option="statusChartOption" autoresize />
         </a-card>
       </a-col>
@@ -69,10 +69,10 @@
     <!-- Recent Activities Row -->
     <a-row :gutter="16">
       <a-col :xs="24" :lg="12">
-        <a-card title="Recent Service Requests" :loading="loading">
+        <a-card :title="t('dashboard.recentRequests.title')" :loading="loading">
           <a-list
             :data-source="recentRequests"
-            :locale="{ emptyText: 'No recent requests' }"
+            :locale="{ emptyText: t('dashboard.recentRequests.empty') }"
           >
             <template #renderItem="{ item }">
               <a-list-item>
@@ -82,7 +82,7 @@
                 />
                 <template #extra>
                   <a-tag :color="getStatusColor(item.state)">
-                    {{ item.state }}
+                    {{ t(`common.statusLabels.${item.state}`) }}
                   </a-tag>
                 </template>
               </a-list-item>
@@ -90,22 +90,22 @@
           </a-list>
           <div class="text-center mt-4">
             <a-button type="link" @click="viewAllRequests">
-              View All Requests
+              {{ t('dashboard.recentRequests.viewAll') }}
             </a-button>
           </div>
         </a-card>
       </a-col>
       <a-col :xs="24" :lg="12">
-        <a-card title="Active Drivers" :loading="loading">
+        <a-card :title="t('dashboard.activeDrivers.title')" :loading="loading">
           <a-list
             :data-source="activeDrivers"
-            :locale="{ emptyText: 'No active drivers' }"
+            :locale="{ emptyText: t('dashboard.activeDrivers.empty') }"
           >
             <template #renderItem="{ item }">
               <a-list-item>
                 <a-list-item-meta
                   :title="item.name"
-                  :description="`${item.active_job_count || 0} active jobs`"
+                  :description="t('dashboard.activeDrivers.activeJobs', { count: item.active_job_count || 0 })"
                 >
                   <template #avatar>
                     <a-avatar>
@@ -114,14 +114,14 @@
                   </template>
                 </a-list-item-meta>
                 <template #extra>
-                  <a-badge status="success" text="Online" />
+                  <a-badge status="success" :text="t('common.online')" />
                 </template>
               </a-list-item>
             </template>
           </a-list>
           <div class="text-center mt-4">
             <a-button type="link" @click="viewAllDrivers">
-              View All Drivers
+              {{ t('dashboard.activeDrivers.viewAll') }}
             </a-button>
           </div>
         </a-card>
@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, h } from 'vue'
+import { ref, onMounted, h, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -150,6 +150,7 @@ import {
 } from '@ant-design/icons-vue'
 import { serviceRequestService } from '@/api/services/serviceRequestService'
 import { driverService } from '@/api/services/driverService'
+import { useI18n } from 'vue-i18n'
 
 use([
   CanvasRenderer,
@@ -163,6 +164,7 @@ use([
 
 const router = useRouter()
 const loading = ref(false)
+const { t } = useI18n()
 
 const stats = ref({
   totalRequests: 0,
@@ -174,72 +176,77 @@ const stats = ref({
 const recentRequests = ref<any[]>([])
 const activeDrivers = ref<any[]>([])
 
-const deliveryChartOption = ref({
-  tooltip: {
-    trigger: 'axis',
-  },
-  xAxis: {
-    type: 'category',
-    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-  },
-  yAxis: {
-    type: 'value',
-  },
-  series: [
-    {
-      name: 'Deliveries',
-      type: 'line',
-      data: [120, 132, 101, 134, 90, 230, 210],
-      smooth: true,
-      areaStyle: {
-        color: 'rgba(24, 144, 255, 0.2)',
-      },
-      itemStyle: {
-        color: '#1890ff',
-      },
-    },
-  ],
-})
+const deliveryChartOption = ref({})
+const statusChartOption = ref({})
 
-const statusChartOption = ref({
-  tooltip: {
-    trigger: 'item',
-  },
-  legend: {
-    bottom: '5%',
-    left: 'center',
-  },
-  series: [
-    {
-      type: 'pie',
-      radius: ['40%', '70%'],
-      avoidLabelOverlap: false,
-      itemStyle: {
-        borderRadius: 10,
-        borderColor: '#fff',
-        borderWidth: 2,
-      },
-      label: {
-        show: false,
-      },
-      emphasis: {
-        label: {
-          show: true,
-          fontSize: 14,
-          fontWeight: 'bold',
+watchEffect(() => {
+  deliveryChartOption.value = {
+    tooltip: {
+      trigger: 'axis',
+    },
+    xAxis: {
+      type: 'category',
+      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    },
+    yAxis: {
+      type: 'value',
+    },
+    series: [
+      {
+        name: t('dashboard.charts.deliveriesSeries'),
+        type: 'line',
+        data: [120, 132, 101, 134, 90, 230, 210],
+        smooth: true,
+        areaStyle: {
+          color: 'rgba(24, 144, 255, 0.2)',
+        },
+        itemStyle: {
+          color: '#1890ff',
         },
       },
-      labelLine: {
-        show: false,
-      },
-      data: [
-        { value: 1048, name: 'Delivered', itemStyle: { color: '#52c41a' } },
-        { value: 735, name: 'In Progress', itemStyle: { color: '#1890ff' } },
-        { value: 580, name: 'Pending', itemStyle: { color: '#faad14' } },
-        { value: 484, name: 'Cancelled', itemStyle: { color: '#ff4d4f' } },
-      ],
+    ],
+  }
+
+  statusChartOption.value = {
+    tooltip: {
+      trigger: 'item',
     },
-  ],
+    legend: {
+      bottom: '5%',
+      left: 'center',
+    },
+    series: [
+      {
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: '#fff',
+          borderWidth: 2,
+        },
+        label: {
+          show: false,
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 14,
+            fontWeight: 'bold',
+          },
+        },
+        labelLine: {
+          show: false,
+        },
+        data: [
+          { value: 1048, name: t('dashboard.charts.delivered'), itemStyle: { color: '#52c41a' } },
+          { value: 735, name: t('dashboard.charts.inProgress'), itemStyle: { color: '#1890ff' } },
+          { value: 580, name: t('dashboard.charts.pending'), itemStyle: { color: '#faad14' } },
+          { value: 484, name: t('dashboard.charts.cancelled'), itemStyle: { color: '#ff4d4f' } },
+        ],
+      },
+    ],
+  }
 })
 
 function getStatusColor(state: string) {

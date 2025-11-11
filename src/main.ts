@@ -8,6 +8,7 @@ import './assets/styles/main.css'
 
 import App from './App.vue'
 import router from './router'
+import i18n from './locales'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -16,5 +17,6 @@ app.use(pinia)
 app.use(router)
 app.use(Antd)
 app.use(VueQueryPlugin)
+app.use(i18n)
 
 app.mount('#app')

@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDriversStore } from '@/stores/drivers'
 import { ReloadOutlined, UserOutlined } from '@ant-design/icons-vue'

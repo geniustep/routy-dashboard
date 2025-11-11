@@ -120,7 +120,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { useServiceRequest } from '@/composables/useServiceRequests'
 import { formatDateTime } from '@/utils/date'
@@ -132,7 +132,6 @@ import {
 } from '@ant-design/icons-vue'
 
 const route = useRoute()
-const router = useRouter()
 const id = Number(route.params.id)
 
 const { serviceRequest, isLoading } = useServiceRequest(id)
